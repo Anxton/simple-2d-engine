@@ -7,39 +7,51 @@ import { ComponentStore } from "./component-store";
 import type { Entity } from "./entity";
 
 export class World {
-  terminationSignal: number = 0;
-  previousRenderTimestamp: number = 0;
-
-  _entities: Entity[] = [];
-
   width: number;
   height: number;
 
-  positions = new ComponentStore<Position>();
-  velocities = new ComponentStore<Velocity>();
-  colliders = new ComponentStore<Collider>();
-  sprites = new ComponentStore<Sprite>();
-  collisions = [] as Collision[];
+  private _entities: Entity[];
+  collisions: Collision[];
+  positions: ComponentStore<Position>;
+  velocities: ComponentStore<Velocity>;
+  colliders: ComponentStore<Collider>;
+  sprites: ComponentStore<Sprite>;
+  stores: ComponentStore<any>[];
 
-  stores: ComponentStore<any>[] = [this.positions, this.velocities, this.colliders, this.sprites];
+  tick: number;
+  tickDuration: number;
 
-  constructor(width: number = 800, height: number = 600) {
+  constructor(width: number, height: number, tickDuration: number) {
     this.width = width;
     this.height = height;
+
+    this._entities = [];
+    this.collisions = [];
+    this.positions = new ComponentStore<Position>();
+    this.velocities = new ComponentStore<Velocity>();
+    this.colliders = new ComponentStore<Collider>();
+    this.sprites = new ComponentStore<Sprite>();
+    this.stores = [this.positions, this.velocities, this.colliders, this.sprites];
+
+    this.tick = 0;
+    this.tickDuration = tickDuration;
   }
 
-  createEntity = () => {
+  createEntity = (): number => {
     const id = Math.max(...this._entities, 0) + 1;
     this._entities.push(id);
     return id;
   };
 
-  removeEntity = (entity: Entity) => {
+  removeEntity = (entity: Entity): void => {
     this.stores.forEach((store) => store.remove(entity));
-    this._entities = this._entities.filter((e) => e !== entity);
+    this._entities = this._entities.filter((ent) => ent !== entity);
+    this.collisions = this.collisions.filter(
+      ({ entityA, entityB }) => entity !== entityA && entity !== entityB,
+    );
   };
 
-  get numberOfEntities() {
+  get numberOfEntities(): number {
     return this._entities.length;
   }
 
@@ -47,7 +59,11 @@ export class World {
    * Get a copy of the entities array
    * @return array of entities
    */
-  entities(): Entity[] {
+  get entities(): Entity[] {
     return [...this._entities];
+  }
+
+  get elapsedTime(): number {
+    return this.tick * this.tickDuration;
   }
 }

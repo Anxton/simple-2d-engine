@@ -10,9 +10,11 @@ export type ColliderType = (typeof ColliderType)[keyof typeof ColliderType];
 
 export abstract class Collider {
   type: ColliderType;
+  isStatic: boolean;
 
-  constructor(type: ColliderType) {
+  constructor(type: ColliderType, isStatic: boolean = false) {
     this.type = type;
+    this.isStatic = isStatic;
   }
 }
 

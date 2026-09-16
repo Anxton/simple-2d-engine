@@ -13,8 +13,11 @@ export class CollisionSystem {
   }
 
   detectCollisions() {
-    const entities = this.world.entities();
+    this.world.collisions.length = 0;
+    const entities = this.world.entities;
 
+    // todo divide world into chunks
+    // todo only iterate through colliders
     for (let i = 0; i < entities.length; i++) {
       for (let j = i + 1; j < entities.length; j++) {
         const entityA = entities[i];
@@ -33,13 +36,13 @@ export class CollisionSystem {
     const posA = this.world.positions.get(entityA);
     const posB = this.world.positions.get(entityB);
 
-    if (!colliderA || !colliderB || !posA || !posB) {
+    if (!colliderA || !colliderB || !posA || !posB || (colliderA.isStatic && colliderB.isStatic)) {
       return null;
     }
 
     switch (colliderA.type) {
       case ColliderType.Circle:
-        switch (this.world.colliders.get(entityB)?.type) {
+        switch (colliderB.type) {
           case ColliderType.Circle:
             return this.checkCircleToCircleCollision(
               entityA,
@@ -50,13 +53,39 @@ export class CollisionSystem {
               colliderB as ColliderCircle,
             );
           case ColliderType.Box:
-            return this.checkCircleToBoxCollision(
-              entityA,
-              posA,
-              colliderA as ColliderCircle,
+            return this.checkBoxToCircleCollision(
               entityB,
               posB,
               colliderB as ColliderBox,
+              entityA,
+              posA,
+              colliderA as ColliderCircle,
+            );
+
+          default:
+            return null;
+        }
+
+      case ColliderType.Box:
+        switch (colliderB.type) {
+          case ColliderType.Box:
+            return this.checkBoxToBoxCollision(
+              entityA,
+              posA,
+              colliderA as ColliderBox,
+              entityB,
+              posB,
+              colliderB as ColliderBox,
+            );
+
+          case ColliderType.Circle:
+            return this.checkBoxToCircleCollision(
+              entityA,
+              posA,
+              colliderA as ColliderBox,
+              entityB,
+              posB,
+              colliderB as ColliderCircle,
             );
 
           default:
@@ -68,16 +97,29 @@ export class CollisionSystem {
     }
   }
 
-  private checkCircleToBoxCollision(
+  private checkBoxToCircleCollision(
     entityA: Entity,
     posA: Position,
-    colliderA: ColliderCircle,
+    colA: ColliderBox,
     entityB: Entity,
     posB: Position,
-    colliderB: ColliderBox,
+    colB: ColliderCircle,
   ): Collision | null {
-    if (V.distance(posA, posB) <= colliderA.radius + Math.max(colliderB.width, colliderB.height)) {
-      return { entityA, entityB, contactPoint: { x: 0, y: 0 }, normal: { x: 0, y: 0 } };
+    const absVecDist = V.abs(V.subtract(posB, posA));
+    if (
+      absVecDist.x - colA.width / 2 - colB.radius <= 0 &&
+      absVecDist.y - colA.height / 2 - colB.radius <= 0
+    ) {
+      return {
+        entityA,
+        entityB,
+        // todo normal thats not only up or down
+        normalAToB: {
+          x: 0,
+          y: V.dot(V.subtract(posB, posA), { x: 0, y: 1 }) > 0 ? 1 : -1,
+        },
+        depth: Math.abs(colA.height / 2 + colB.radius - absVecDist.y),
+      };
     }
 
     return null;
@@ -86,13 +128,13 @@ export class CollisionSystem {
   private checkCircleToCircleCollision(
     entityA: Entity,
     posA: Position,
-    colliderA: ColliderCircle,
+    colA: ColliderCircle,
     entityB: Entity,
     posB: Position,
-    colliderB: ColliderCircle,
+    colB: ColliderCircle,
   ): Collision | null {
     // if circle centers are closer than the sum of their radii, they are colliding
-    if (V.distance(posA, posB) <= colliderA.radius + colliderB.radius) {
+    if (V.distance(posA, posB) <= colA.radius + colB.radius) {
       // todo: calculate the normal vector from entityA to entityB and understand it
       // source: https://stackoverflow.com/questions/345838/ball-to-ball-collision-detection-and-handling
       // wiki: https://en.wikipedia.org/wiki/Elastic_collision#Two-dimensional_collision_with_two_moving_objects
@@ -100,12 +142,23 @@ export class CollisionSystem {
       return {
         entityA,
         entityB,
-        normal,
+        normalAToB: normal,
         // depth is how much the radii "stick out" of the distance between the centers
-        depth: colliderA.radius + colliderB.radius - V.distance(posA, posB),
+        depth: colA.radius + colB.radius - V.distance(posA, posB),
       };
     }
 
+    return null;
+  }
+
+  private checkBoxToBoxCollision(
+    entityA: Entity,
+    posA: Position,
+    colA: ColliderBox,
+    entityB: Entity,
+    posB: Position,
+    colB: ColliderBox,
+  ): Collision | null {
     return null;
   }
 }

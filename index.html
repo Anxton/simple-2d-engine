@@ -4,20 +4,22 @@
     <title>Simple 2D Engine</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="src/styles.css" />
+    <link rel="stylesheet" href="/src/styles.css" />
   </head>
 
   <body>
     <script type="module" src="/src/main.ts"></script>
     <div class="game-container">
       <div class="topbar">
+        <button id="start-button">Start game</button>
         <div class="slider-container">
           <label for="entity-count">1</label>
           <input type="range" id="entity-count" min="1" max="100" value="1" />
         </div>
         <button id="add-entities-button">Add Entities</button>
         <button id="clear-entities-button">Clear Entities</button>
-        <button id="stop-game-button">Stop Game</button>
+        <button id="tick-step-button">Tick Step</button>
+        <button id="render-button">Render</button>
       </div>
       <canvas class="game" width="1920" height="1080">canvas fallback</canvas>
     </div>

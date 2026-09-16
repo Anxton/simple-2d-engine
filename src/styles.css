@@ -17,7 +17,6 @@ body {
   align-items: center;
 }
 .topbar {
-  width: calc(100% - 30vw);
   display: flex;
   gap: 1em;
   justify-content: center;
@@ -26,12 +25,12 @@ body {
 .slider-container {
   display: flex;
   flex-direction: column;
-  gap: 0.5em;
+  /* gap: 0em; */
   justify-content: center;
   align-items: center;
 }
 .game {
-  width: calc(100% - 30vw);
+  width: 75%;
   height: auto; /* Important to keep aspect ratio */
   max-width: 100vw;
   max-height: 100vh; /* Make sure it doesn’t overflow vertically */

@@ -7,10 +7,10 @@ export const SpriteKind = {
 export type SpriteKind = (typeof SpriteKind)[keyof typeof SpriteKind];
 
 export abstract class Sprite {
-  kind: SpriteKind;
+  type: SpriteKind;
 
   constructor(kind: SpriteKind) {
-    this.kind = kind;
+    this.type = kind;
   }
 }
 
