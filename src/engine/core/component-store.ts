@@ -19,7 +19,7 @@ export class ComponentStore<T> {
     return this.store.delete(entity);
   }
 
-  entries(): IterableIterator<[Entity, T]> {
-    return this.store.entries();
+  entries(): Array<[Entity, T]> {
+    return Array.from(this.store.entries());
   }
 }

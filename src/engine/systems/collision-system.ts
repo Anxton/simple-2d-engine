@@ -16,8 +16,8 @@ export class CollisionSystem {
     this.world.collisions.length = 0;
     const entities = this.world.entities;
 
-    // todo divide world into chunks
-    // todo only iterate through colliders
+    // TODO: divide world into chunks
+    // TODO: only iterate through colliders
     for (let i = 0; i < entities.length; i++) {
       for (let j = i + 1; j < entities.length; j++) {
         const entityA = entities[i];
@@ -110,15 +110,17 @@ export class CollisionSystem {
       absVecDist.x - colA.width / 2 - colB.radius <= 0 &&
       absVecDist.y - colA.height / 2 - colB.radius <= 0
     ) {
+      const penetrationDepth = colA.height / 2 + colB.radius - absVecDist.y;
       return {
         entityA,
         entityB,
-        // todo normal thats not only up or down
         normalAToB: {
           x: 0,
-          y: V.dot(V.subtract(posB, posA), { x: 0, y: 1 }) > 0 ? 1 : -1,
+          // TODO: normal thats not only up or down
+          y: -1,
+          // V.dot(V.subtract(posB, posA), { x: 0, y: 1 }) > 0 ? 1 : -1,
         },
-        depth: Math.abs(colA.height / 2 + colB.radius - absVecDist.y),
+        depth: penetrationDepth,
       };
     }
 
@@ -135,16 +137,17 @@ export class CollisionSystem {
   ): Collision | null {
     // if circle centers are closer than the sum of their radii, they are colliding
     if (V.distance(posA, posB) <= colA.radius + colB.radius) {
-      // todo: calculate the normal vector from entityA to entityB and understand it
-      // source: https://stackoverflow.com/questions/345838/ball-to-ball-collision-detection-and-handling
-      // wiki: https://en.wikipedia.org/wiki/Elastic_collision#Two-dimensional_collision_with_two_moving_objects
+      const penetrationDepth = colA.radius + colB.radius - V.distance(posA, posB);
       const normal = V.normalize(V.subtract(posB, posA));
+      console.log(
+        `circle collision:\n  A: ${entityA}, B: ${entityB}\n  normal A to B: ${normal.x.toFixed(2)}, ${normal.y.toFixed(2)}\n  penetration: ${penetrationDepth.toFixed(2)}`,
+      );
       return {
         entityA,
         entityB,
         normalAToB: normal,
         // depth is how much the radii "stick out" of the distance between the centers
-        depth: colA.radius + colB.radius - V.distance(posA, posB),
+        depth: penetrationDepth,
       };
     }
 

@@ -3,6 +3,7 @@ import { SpriteCircle, SpriteRectangle } from "../engine/components/sprite";
 import { World } from "../engine/core/world";
 import { V, type Vec2 } from "../engine/math/vector";
 import { CollisionSystem } from "../engine/systems/collision-system";
+import { MouseSystem } from "../engine/systems/mouse-system";
 import { PhysicsSystem } from "../engine/systems/physics-system";
 import { RenderSystem } from "../engine/systems/render-system";
 
@@ -13,10 +14,12 @@ const MAX_FRAME_DT: number = 1;
 export class Game {
   public playing: boolean;
 
+  private canvas: HTMLCanvasElement;
   private world: World;
   private physicsSystem: PhysicsSystem;
   private collisionSystem: CollisionSystem;
   private renderSystem: RenderSystem;
+  private mouseSystem: MouseSystem;
 
   private accumulator: number;
   private startTime: number;
@@ -27,17 +30,20 @@ export class Game {
     this.playing = false;
 
     // World size tied to canvas size (logical pixels)
+    this.canvas = canvas;
     this.world = new World(canvas.width, canvas.height, TICK_DURATION);
 
     // Systems
     this.physicsSystem = new PhysicsSystem(this.world);
     this.collisionSystem = new CollisionSystem(this.world);
     this.renderSystem = new RenderSystem(this.world, canvas2DContext);
+    this.mouseSystem = new MouseSystem(this.world);
 
     this.accumulator = 0;
     this.startTime = 0;
     this.lastFrameTime = 0;
     this.terminationSignal = 0;
+    addEventListener("resize", () => this.setSize());
     // Initialize the game world
     this.initGame();
   }
@@ -51,13 +57,12 @@ export class Game {
       this.accumulator += dt;
       this.lastFrameTime = currentTime;
 
-      // todo: understand catch-up mechanism ?
+      // TODO: understand catch-up mechanism ?
       while (this.accumulator >= TICK_DURATION) {
         this.processGameTick(TICK_DURATION);
         this.accumulator -= TICK_DURATION;
       }
-      const realElapsedTime = (this.lastFrameTime - this.startTime) / 1000;
-      this.renderSystem.render(dt, realElapsedTime);
+      this.render();
     };
 
     // Start
@@ -96,16 +101,17 @@ export class Game {
 
   tickStep() {
     this.pause();
-    const realElapsedTime = (performance.now() - this.startTime) / 1000;
     this.processGameTick(TICK_DURATION);
-    this.renderSystem.render(TICK_DURATION, realElapsedTime);
+    this.render();
   }
 
   render() {
-    this.renderSystem.render(TICK_DURATION, 0);
+    const realElapsedTime = (performance.now() - this.startTime) / 1000;
+    this.renderSystem.render(TICK_DURATION, realElapsedTime);
   }
 
   private processGameTick(dt: number) {
+    this.mouseSystem.handleMouse();
     this.physicsSystem.updatePhysics(dt);
     this.collisionSystem.detectCollisions();
     this.physicsSystem.resolveCollisions();
@@ -129,6 +135,7 @@ export class Game {
   }
 
   private initGame(): void {
+    this.setSize();
     this.addBorders();
     this.addRandomCircles(10);
   }
@@ -141,4 +148,11 @@ export class Game {
   private getRandomColor = (): string => {
     return this.COLORS[Math.floor(Math.random() * this.COLORS.length)];
   };
+
+  private setSize() {
+    this.world.height = innerHeight;
+    this.canvas.height = innerHeight;
+    this.world.width = innerWidth;
+    this.canvas.width = innerWidth;
+  }
 }

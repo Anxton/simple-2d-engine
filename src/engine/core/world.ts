@@ -3,6 +3,7 @@ import type { Collision } from "../components/collision";
 import type { Position } from "../components/position";
 import { Sprite } from "../components/sprite";
 import type { Velocity } from "../components/velocity";
+import type { Vec2 } from "../math/vector";
 import { ComponentStore } from "./component-store";
 import type { Entity } from "./entity";
 
@@ -10,6 +11,7 @@ export class World {
   width: number;
   height: number;
 
+  // data
   private _entities: Entity[];
   collisions: Collision[];
   positions: ComponentStore<Position>;
@@ -18,9 +20,15 @@ export class World {
   sprites: ComponentStore<Sprite>;
   stores: ComponentStore<any>[];
 
+  // tick
   tick: number;
   tickDuration: number;
 
+  // mouse stuff
+  mouse: Vec2;
+  mouseClicked: boolean;
+  draggedEntity: Entity | null;
+  vecBetweenDraggedAndMouse: Vec2;
   constructor(width: number, height: number, tickDuration: number) {
     this.width = width;
     this.height = height;
@@ -35,6 +43,19 @@ export class World {
 
     this.tick = 0;
     this.tickDuration = tickDuration;
+
+    // mouse stuff
+    this.mouse = { x: width / 2, y: height / 2 };
+    this.mouseClicked = false;
+    this.draggedEntity = null;
+    this.vecBetweenDraggedAndMouse = { x: 0, y: 0 };
+
+    addEventListener("mousemove", (e) => {
+      this.mouse.x = e.clientX;
+      this.mouse.y = e.clientY;
+    });
+    addEventListener("mousedown", () => (this.mouseClicked = true));
+    addEventListener("mouseup", () => (this.mouseClicked = false));
   }
 
   createEntity = (): number => {

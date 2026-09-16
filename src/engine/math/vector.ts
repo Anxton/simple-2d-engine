@@ -25,4 +25,10 @@ export const V = {
     }
     return { x: vec.x / mag, y: vec.y / mag };
   },
+  project: (a: Vec2, b: Vec2): Vec2 => V.scale(b, V.dot(a, b)),
+  // b should be a unit vector hehe, idk what happens if it isnt? probably nonsense
+  reflect: (a: Vec2, b: Vec2): Vec2 => {
+    const projA = V.project(a, b);
+    return V.subtract(V.subtract(a, projA), projA);
+  },
 };

@@ -11,7 +11,7 @@
     <script type="module" src="/src/main.ts"></script>
     <div class="game-container">
       <div class="topbar">
-        <button id="start-button">Start game</button>
+        <button id="start-button">Pause game</button>
         <div class="slider-container">
           <label for="entity-count">1</label>
           <input type="range" id="entity-count" min="1" max="100" value="1" />
@@ -21,7 +21,7 @@
         <button id="tick-step-button">Tick Step</button>
         <button id="render-button">Render</button>
       </div>
-      <canvas class="game" width="1920" height="1080">canvas fallback</canvas>
+      <canvas id="game" width="1280" height="720">canvas fallback</canvas>
     </div>
   </body>
 </html>

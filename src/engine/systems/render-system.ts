@@ -7,6 +7,7 @@ import {
   SpriteKind as SpriteType,
 } from "../components/sprite";
 import { World } from "../core/world";
+import { V, type Vec2 } from "../math/vector";
 
 const DEBUG: boolean = true;
 
@@ -46,7 +47,7 @@ export class RenderSystem {
   /** Write in the center of the canvas the number of entities */
   private renderNumberOfEntities = () => {
     this.ctx.fillStyle = "black";
-    this.ctx.font = "200px JetBrainsMono Nerd Font";
+    this.ctx.font = "150px JetBrainsMono Nerd Font";
     this.ctx.textBaseline = "middle";
     const text = this.world.numberOfEntities.toString();
     const textMetrics = this.ctx.measureText(text);
@@ -77,18 +78,25 @@ export class RenderSystem {
         if (!pos) {
           continue;
         }
+        // draw lines to other
+        if (V.distance(this.world.mouse, pos) < 100) {
+          for (const [, ePos] of this.world.positions.entries()) {
+            this.drawLine(pos, ePos);
+            this.drawDot(pos);
+          }
+        }
         this.ctx.strokeStyle = "red";
         this.ctx.strokeRect(pos.x, pos.y, 1, 1);
         this.ctx.fillStyle = "black";
-        this.ctx.font = "22px JetBrainsMono Nerd Font";
-        // this.ctx.textBaseline = "middle";
+        this.ctx.font = "18px JetBrainsMono Nerd Font";
+        this.ctx.textBaseline = "middle";
         const idText = entity.toString();
         this.ctx.fillText(idText, pos.x - 6, pos.y - 22);
         const posText = `x: ${pos.x.toFixed(2)} | y: ${pos.y.toFixed(2)}`;
-        this.ctx.fillText(posText, pos.x, pos.y);
+        this.ctx.fillText(posText, pos.x - 100, pos.y);
         if (velocity) {
           const velText = `vx: ${velocity.x.toFixed(2)} | vy: ${velocity.y.toFixed(2)}`;
-          this.ctx.fillText(velText, pos.x, pos.y + 20);
+          this.ctx.fillText(velText, pos.x - 100, pos.y + 20);
         }
 
         if (collider) {
@@ -107,7 +115,7 @@ export class RenderSystem {
         this.drawRectangle(pos, sprite as SpriteRectangle);
         break;
       case SpriteType.Image:
-        // todo this.drawImage(pos, sprite as Image);
+        // TODO: this.drawImage(pos, sprite as Image);
         break;
       default:
         break;
@@ -123,11 +131,27 @@ export class RenderSystem {
         this.drawBoxCollider(pos, collider as ColliderBox);
         break;
       case ColliderType.Polygon:
-        // todo
+        // TODO:
         break;
       default:
         break;
     }
+  }
+
+  private drawLine(pos1: Vec2, pos2: Vec2) {
+    this.ctx.strokeStyle = "red";
+    this.ctx.lineWidth = 1;
+    this.ctx.beginPath();
+    this.ctx.moveTo(pos1.x, pos1.y);
+    this.ctx.lineTo(pos2.x, pos2.y);
+    this.ctx.stroke();
+    this.ctx.closePath();
+  }
+
+  private drawDot(pos: Vec2) {
+    this.ctx.fillStyle = "red";
+    this.ctx.arc(pos.x, pos.y, 5, 0, Math.PI * 2);
+    this.ctx.fill();
   }
 
   private drawCircle(pos: Position, circle: SpriteCircle) {
@@ -172,7 +196,7 @@ export class RenderSystem {
 
   private renderDebugInfo(realElapsedTime: number): void {
     this.ctx.fillStyle = "black";
-    this.ctx.font = "26px JetBrainsMono Nerd Font";
+    this.ctx.font = "20px JetBrainsMono Nerd Font";
     this.ctx.textBaseline = "top";
 
     const debugInfo = [
@@ -181,9 +205,12 @@ export class RenderSystem {
       `Real time: ${realElapsedTime.toFixed(2)}s`,
       `World time: ${this.world.elapsedTime.toFixed(2)}s`,
       `Tick: ${this.world.tick}`,
-      `Tick duration: ${this.world.tickDuration}`,
+      `Tick duration: ${this.world.tickDuration.toFixed(5)}`,
       `Entities: [${this.world.entities}]`,
       `Collisions: [${this.world.collisions.map((c) => `(${c.entityA}, ${c.entityB})`)}]`,
+      `Mouse: (${this.world.mouse.x}, ${this.world.mouse.y}) ${this.world.mouseClicked ? "🖱️" : ""}`,
+      `draggedEntity: ${this.world.draggedEntity}`,
+      `vecBetweenDraggedAndMouse: ${this.world.vecBetweenDraggedAndMouse.x.toFixed(2)}, ${this.world.vecBetweenDraggedAndMouse.y.toFixed(2)}`,
     ];
     for (let i = 0; i < debugInfo.length; i++) {
       this.ctx.fillText(debugInfo[i], 10, 10 + i * 26);
@@ -193,7 +220,6 @@ export class RenderSystem {
   private renderDebugGrid(): void {
     this.ctx.strokeStyle = "grey";
     this.ctx.lineWidth = 1;
-    this.ctx.lineJoin = "round";
     // left-to-right, draw vertical lines
     for (let i = 0; i < this.world.width; i += 100) {
       this.ctx.beginPath();

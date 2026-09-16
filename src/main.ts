@@ -11,7 +11,9 @@ const buttonTickStep = document.getElementById("tick-step-button") as HTMLButton
 const buttonRender = document.getElementById("render-button") as HTMLButtonElement;
 
 const game = new Game(canvas, canvas2DContext);
+
 game.start();
+
 const refreshStartButtonText = () => {
   buttonStartStopGame.innerText = !game.playing ? "Resume game" : "Pause game";
 };
