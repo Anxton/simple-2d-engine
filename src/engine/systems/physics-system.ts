@@ -39,14 +39,20 @@ export class PhysicsSystem {
         // uncram the entities by moving them apart along the collision normal
         posA.x -= (normalAToB.x * collision.depth!) / (isStaticB ? 1 : 2);
         posA.y -= (normalAToB.y * collision.depth!) / (isStaticB ? 1 : 2);
-        const updatedVelA = V.scale(V.reflect(velA, V.flip(normalAToB)), bounciness);
+        // FIXME: this is not right for 2 non-static objects, there should be energy transfer between the 2 objects instead of a simple velocity "reflection"
+        let updatedVelA = V.reflect(velA, V.flip(normalAToB));
+        // factor in bounciness
+        updatedVelA = V.scale(updatedVelA, bounciness);
         this.world.velocities.set(collision.entityA, updatedVelA);
       }
       if (!isStaticB) {
         // uncram the entities by moving them apart along the collision normal
         posB.x += (normalAToB.x * collision.depth!) / (isStaticA ? 1 : 2);
         posB.y += (normalAToB.y * collision.depth!) / (isStaticA ? 1 : 2);
-        const updatedVelB = V.scale(V.reflect(velB, normalAToB), bounciness);
+        // FIXME: this is not right for 2 non-static objects, there should be energy transfer between the 2 objects instead of a simple velocity "reflection"
+        let updatedVelB = V.reflect(velB, normalAToB);
+        // factor in bounciness
+        updatedVelB = V.scale(updatedVelB, bounciness);
         this.world.velocities.set(collision.entityB, updatedVelB);
       }
     });
