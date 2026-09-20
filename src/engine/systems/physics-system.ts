@@ -18,9 +18,9 @@ export class PhysicsSystem {
 
   updatePhysics(dt: number) {
     for (const [e, pos] of this.world.positions.entries()) {
+      this.applyGravity(dt, e);
       this.move(dt, e, pos);
       this.destroyEntityIfOutOfBounds(e, pos);
-      this.applyGravity(dt, e);
     }
   }
 
@@ -34,20 +34,19 @@ export class PhysicsSystem {
       const velB = this.world.velocities.get(collision.entityB)!;
       const isStaticB = this.world.colliders.get(collision.entityB)?.isStatic;
 
+      const bounciness = 0.8;
       if (!isStaticA) {
         // uncram the entities by moving them apart along the collision normal
         posA.x -= (normalAToB.x * collision.depth!) / (isStaticB ? 1 : 2);
         posA.y -= (normalAToB.y * collision.depth!) / (isStaticB ? 1 : 2);
-        // FIXME: balls bounce higher and higher on the ground
-        const updatedVelA = V.reflect(velA, V.flip(normalAToB));
+        const updatedVelA = V.scale(V.reflect(velA, V.flip(normalAToB)), bounciness);
         this.world.velocities.set(collision.entityA, updatedVelA);
       }
       if (!isStaticB) {
         // uncram the entities by moving them apart along the collision normal
         posB.x += (normalAToB.x * collision.depth!) / (isStaticA ? 1 : 2);
         posB.y += (normalAToB.y * collision.depth!) / (isStaticA ? 1 : 2);
-        // FIXME: balls bounce higher and higher on the ground
-        const updatedVelB = V.reflect(velB, normalAToB);
+        const updatedVelB = V.scale(V.reflect(velB, normalAToB), bounciness);
         this.world.velocities.set(collision.entityB, updatedVelB);
       }
     });
