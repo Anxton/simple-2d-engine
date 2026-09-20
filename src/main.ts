@@ -9,6 +9,7 @@ const buttonAddEntities = document.getElementById("add-entities-button") as HTML
 const buttonClearEntities = document.getElementById("clear-entities-button") as HTMLButtonElement;
 const buttonTickStep = document.getElementById("tick-step-button") as HTMLButtonElement;
 const buttonRender = document.getElementById("render-button") as HTMLButtonElement;
+const gravityButton = document.getElementById("gravity-button") as HTMLButtonElement;
 
 const game = new Game(canvas, canvas2DContext);
 
@@ -43,4 +44,7 @@ buttonTickStep.onclick = () => {
 };
 buttonRender.onclick = () => {
   game.render();
+};
+gravityButton.onclick = () => {
+  game.toggleGravity();
 };

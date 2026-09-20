@@ -110,6 +110,10 @@ export class Game {
     this.renderSystem.render(TICK_DURATION, realElapsedTime);
   }
 
+  toggleGravity() {
+    this.physicsSystem.toggleGravity();
+  }
+
   private processGameTick(dt: number) {
     this.mouseSystem.handleMouse();
     this.physicsSystem.updatePhysics(dt);

@@ -53,6 +53,14 @@ export class PhysicsSystem {
     });
   }
 
+  toggleGravity() {
+    if (this.gravity == 0) {
+      this.gravity = defaultGravity;
+    } else {
+      this.gravity = 0;
+    }
+  }
+
   private move(dt: number, entity: Entity, pos: Vec2) {
     const velocity = this.world.velocities.get(entity);
     if (velocity) {

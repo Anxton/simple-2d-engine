@@ -71,6 +71,12 @@ export class RenderSystem {
       this.drawShape(pos, sprite);
     }
     if (DEBUG) {
+      if (this.world.draggedEntity) {
+        this.drawLine(this.world.mouse, {
+          x: this.world.mouse.x + this.world.vecBetweenDraggedAndMouse.x,
+          y: this.world.mouse.y + this.world.vecBetweenDraggedAndMouse.y,
+        });
+      }
       for (const entity of this.world.entities) {
         const pos = this.world.positions.get(entity);
         const velocity = this.world.velocities.get(entity);
